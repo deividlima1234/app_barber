@@ -17,12 +17,14 @@ class AuthState {
   final AuthStatus status;
   final String? userRole;
   final String? token;
+  final bool firstLogin;
   final String? errorMessage;
 
   AuthState({
     this.status = AuthStatus.checking,
     this.userRole,
     this.token,
+    this.firstLogin = false,
     this.errorMessage,
   });
 
@@ -30,12 +32,14 @@ class AuthState {
     AuthStatus? status,
     String? userRole,
     String? token,
+    bool? firstLogin,
     String? errorMessage,
   }) {
     return AuthState(
       status: status ?? this.status,
       userRole: userRole ?? this.userRole,
       token: token ?? this.token,
+      firstLogin: firstLogin ?? this.firstLogin,
       errorMessage: errorMessage, // if null, it can be passed explicit to erase
     );
   }
@@ -56,6 +60,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           status: AuthStatus.authenticated,
           token: sessionData['token'],
           userRole: sessionData['role'],
+          firstLogin: sessionData['firstLogin'] ?? false,
         );
       } else {
         state = state.copyWith(status: AuthStatus.unauthenticated);
@@ -76,6 +81,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         status: AuthStatus.authenticated,
         token: response['token'],
         userRole: response['role'],
+        firstLogin: response['firstLogin'] ?? false,
         errorMessage: null,
       );
     } catch (e) {
@@ -89,6 +95,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     await _authRepository.logout();
     state = AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  Future<void> markFirstLoginCompleted() async {
+    await _authRepository.setFirstLoginCompleted();
+    state = state.copyWith(firstLogin: false);
   }
 }
 

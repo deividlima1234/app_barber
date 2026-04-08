@@ -8,6 +8,7 @@ import 'package:barber_gold/features/admin/admin_layout.dart';
 import 'package:barber_gold/features/customer/roulette_screen.dart';
 import 'package:barber_gold/features/shared/about_screen.dart';
 import 'package:barber_gold/features/barber/scanner_pro_screen.dart';
+import 'package:barber_gold/features/auth/welcome_guide_screen.dart';
 import 'package:barber_gold/providers/auth_provider.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -22,6 +23,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         case AuthStatus.unauthenticated:
           return isGoingToLogin ? null : '/login';
         case AuthStatus.authenticated:
+          final isFirstLogin = authState.firstLogin;
+          final isGoingToGuide = state.matchedLocation == '/welcome-guide';
+
+          if (isFirstLogin && !isGoingToGuide) {
+            return '/welcome-guide';
+          }
+          if (!isFirstLogin && isGoingToGuide) {
+             // If they try to go to the guide but already finished, send to home
+             if (authState.userRole == 'ROLE_CUSTOMER') return '/customer';
+             if (authState.userRole == 'ROLE_BARBER') return '/barber';
+             if (authState.userRole == 'ROLE_ADMIN') return '/admin';
+          }
+
           if (isGoingToLogin) {
             // Redirect based on role
             if (authState.userRole == 'ROLE_CUSTOMER') return '/customer';
@@ -37,6 +51,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/welcome-guide',
+        builder: (context, state) => const WelcomeGuideScreen(),
       ),
       GoRoute(
         path: '/customer',

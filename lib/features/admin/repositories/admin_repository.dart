@@ -64,4 +64,10 @@ class AdminRepository {
   Future<void> toggleService(int id) async {
     await _dio.patch('/services/$id/toggle');
   }
+
+  Future<void> resetPassword(String userId, String newPassword) async {
+    await _dio.put('/admin/users/$userId/password-reset', data: {
+      'newPassword': newPassword,
+    });
+  }
 }

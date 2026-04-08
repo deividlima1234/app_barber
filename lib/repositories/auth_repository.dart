@@ -30,11 +30,13 @@ class AuthRepository {
         }
         await _storage.write(key: 'user_role', value: role);
         await _storage.write(key: 'username', value: data['username'] ?? username);
+        await _storage.write(key: 'first_login', value: (data['firstLogin'] ?? true).toString());
         
         return {
           'success': true,
           'token': data['token'],
           'role': role,
+          'firstLogin': data['firstLogin'] ?? true,
         };
       }
       throw Exception('Datos de autenticación inválidos');
@@ -59,14 +61,21 @@ class AuthRepository {
     await _storage.delete(key: 'jwt_token');
     await _storage.delete(key: 'user_role');
     await _storage.delete(key: 'username');
+    await _storage.delete(key: 'first_login');
   }
 
-  Future<Map<String, String?>> checkPersistedSession() async {
+  Future<Map<String, dynamic>> checkPersistedSession() async {
     final token = await _storage.read(key: 'jwt_token');
     final role = await _storage.read(key: 'user_role');
+    final firstLoginStr = await _storage.read(key: 'first_login');
     return {
       'token': token,
       'role': role,
+      'firstLogin': firstLoginStr == 'true',
     };
+  }
+
+  Future<void> setFirstLoginCompleted() async {
+    await _storage.write(key: 'first_login', value: 'false');
   }
 }

@@ -11,4 +11,6 @@ class ApiConfig {
   // Gamification
   static const String addPoints = '/points/add';
   static const String spinRoulette = '/gamification/spin';
+  static const String finalizeSetup = '/users/me/finalize-setup';
+  static const String profile = '/users/me';
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:barber_gold/features/admin/providers/admin_provider.dart';
+import 'package:barber_gold/features/admin/repositories/admin_repository.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AdminUsersTab extends ConsumerWidget {
@@ -94,12 +95,12 @@ class _UserList extends StatelessWidget {
   }
 }
 
-class _UserCard extends StatelessWidget {
+class _UserCard extends ConsumerWidget {
   final Map<String, dynamic> user;
   const _UserCard({required this.user});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bool isCustomer = user['role'] == 'CUSTOMER';
     final String roleLabel = user['role'] == 'ADMIN' ? 'SUPERUSER' : (user['role'] == 'BARBER' ? 'OPERATIVE' : 'LOYAL CLIENT');
     final Color roleColor = user['role'] == 'ADMIN' ? Colors.redAccent : (user['role'] == 'BARBER' ? Colors.blueAccent : Colors.amberAccent);
@@ -155,7 +156,13 @@ class _UserCard extends StatelessWidget {
                   ),
                 ),
                 if (user['isActive'] == true)
-                  const _PulseIndicator()
+                  const _PulseIndicator(),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.lock_reset, color: Colors.white54, size: 24),
+                  onPressed: () => _showResetPasswordDialog(context, ref),
+                  tooltip: 'Restablecer Contraseña',
+                ),
               ],
             ),
           ),
@@ -172,6 +179,61 @@ class _UserCard extends StatelessWidget {
                 _InfoItem(label: 'MEMBER SINCE', value: dateStr),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showResetPasswordDialog(BuildContext context, WidgetRef ref) {
+    final TextEditingController passController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.redAccent.withOpacity(0.3))),
+        title: Text('RESTABLECER CLAVE', style: GoogleFonts.orbitron(color: Colors.white, fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Ingresa la nueva contraseña para ${user['fullName'] ?? 'este usuario'}:', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13)),
+            const SizedBox(height: 20),
+            TextField(
+              controller: passController,
+              obscureText: true,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Nueva Contraseña',
+                hintStyle: const TextStyle(color: Colors.white24),
+                filled: true,
+                fillColor: Colors.black,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCELAR', style: TextStyle(color: Colors.white24))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () async {
+              if (passController.text.length < 6) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mínimo 6 caracteres')));
+                return;
+              }
+              try {
+                await ref.read(adminRepositoryProvider).resetPassword(user['id'], passController.text);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contraseña actualizada con éxito')));
+                }
+              } catch (e) {
+                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+              }
+            },
+            child: const Text('GUARDAR'),
           ),
         ],
       ),

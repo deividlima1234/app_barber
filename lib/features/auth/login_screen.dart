@@ -78,10 +78,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 60),
               TextField(
                 controller: _usernameController,
+                keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  labelText: 'Teléfono / Usuario',
+                  labelText: 'Correo Electrónico',
                   filled: true,
-                  prefixIcon: Icon(Icons.person),
+                  prefixIcon: Icon(Icons.email_outlined),
                 ),
               ),
               const SizedBox(height: 16),
