@@ -6,6 +6,7 @@ import 'package:barber_gold/features/admin/repositories/admin_repository.dart';
 import 'package:barber_gold/features/admin/services/pdf_qr_service.dart';
 import 'package:barber_gold/features/admin/models/card_admin_dto.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class AdminCardsTab extends ConsumerStatefulWidget {
   const AdminCardsTab({super.key});
@@ -164,15 +165,9 @@ class _AdminCardsTabState extends ConsumerState<AdminCardsTab> {
   }
 
   Widget _errorState(Object e) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
-          const SizedBox(height: 16),
-          Text('Error: $e', style: const TextStyle(color: Colors.white)),
-        ],
-      ),
+    return FriendlyErrorWidget(
+      message: 'No logramos sincronizar el inventario de tarjetas QR. Verifica la señal de red.',
+      onRetry: () => ref.invalidate(allCardsProvider),
     );
   }
 

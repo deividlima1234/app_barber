@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:barber_gold/features/admin/models/prize.dart';
@@ -22,6 +23,8 @@ class _RouletteScreenState extends ConsumerState<RouletteScreen> with SingleTick
   bool _isSpinning = false;
   String? _wonPrizeName;
   String? _wonPrizeDesc;
+  bool _wonRespin = false;
+  double _stopAngle = 0;
 
   @override
   void initState() {
@@ -57,31 +60,62 @@ class _RouletteScreenState extends ConsumerState<RouletteScreen> with SingleTick
 
       final repo = ref.read(prizeRepositoryProvider);
       final result = await repo.spinRoulette(wallet.qrToken!);
-
-      // Calculate end angle
-      // For simplicity, we just spin multiple times and stop at a random point
-      // since the result is already decided by the backend.
-      _controller.reset();
       
+      final activePrizes = ref.read(prizesProvider).value?.where((p) => p.isActive).toList() ?? [];
+      
+      if (activePrizes.isEmpty) throw 'No hay premios activos configurados';
+
+      // Encontrar el índice del premio ganado para detener la ruleta exactamente ahí
+      final wonIndex = activePrizes.indexWhere((p) => p.name == result['name']);
+      
+      if (wonIndex != -1) {
+        final sweepAngle = 2 * pi / activePrizes.length;
+        // Calculamos el ángulo para que el premio quede bajo el puntero (en la parte superior -pi/2)
+        // Agregamos varias vueltas completas (8 vueltas * 2pi) para el efecto visual
+        _stopAngle = (16 * pi) - (wonIndex * sweepAngle + sweepAngle / 2) - (pi / 2);
+      } else {
+        // Fallback si no se encuentra por nombre
+        _stopAngle = 10 * pi;
+      }
+
+      _controller.reset();
       await _controller.forward();
 
       setState(() {
         _isSpinning = false;
-        _wonPrizeName = result['prize'];
-        _wonPrizeDesc = result['description'];
+        _wonPrizeName = result['name'];
+        _wonPrizeDesc = result['description'] ?? "";
+        _wonRespin = result['isRespin'] ?? false;
       });
 
-      // Refresh points
+      // Refrescar puntos antes del diálogo para que se vea actualizado al fondo
       ref.invalidate(customerDashboardProvider);
 
-      if (mounted) {
+      if (mounted && _wonPrizeName != null) {
         _showWinDialog(_wonPrizeName!, _wonPrizeDesc!);
       }
     } catch (e) {
       setState(() => _isSpinning = false);
+      String errorMessage = 'Error al girar la ruleta';
+      
+      if (e is DioException) {
+        debugPrint("Error dio: ${e.response?.statusCode} - ${e.response?.data}");
+        if (e.response?.data != null && e.response?.data['message'] != null) {
+          errorMessage = e.response?.data['message'];
+        } else if (e.response?.statusCode == 401) {
+          errorMessage = 'Sesión expirada. Por favor, inicia sesión de nuevo.';
+        } else {
+          errorMessage = 'Error de conexión con el servidor de premios';
+        }
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(errorMessage), 
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     }
@@ -93,23 +127,30 @@ class _RouletteScreenState extends ConsumerState<RouletteScreen> with SingleTick
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: const BorderSide(color: Colors.redAccent)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24), 
+          side: BorderSide(color: _wonRespin ? Colors.amber : Colors.redAccent)
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Lottie.network(
-              'https://assets9.lottiefiles.com/packages/lf20_tou9vxsq.json', // Confetti
+              'https://lottie.host/8099307c-9b16-43f1-9457-3f338d780727/8XjI7F70Gj.json', // Confetti estable
               width: 200,
               height: 200,
               repeat: false,
             ),
             Text(
-              '¡FELICIDADES!',
-              style: GoogleFonts.orbitron(color: Colors.redAccent, fontSize: 24, fontWeight: FontWeight.bold),
+              _wonRespin ? '¡RE-INTENTO!' : '¡FELICIDADES!',
+              style: GoogleFonts.orbitron(
+                color: _wonRespin ? Colors.amber : Colors.redAccent, 
+                fontSize: 24, 
+                fontWeight: FontWeight.bold
+              ),
             ),
             const SizedBox(height: 16),
             Text(
-              'Has ganado:',
+              _wonRespin ? 'Sigue intentando:' : 'Has ganado:',
               style: GoogleFonts.outfit(color: Colors.grey, fontSize: 16),
             ),
             Text(
@@ -117,15 +158,17 @@ class _RouletteScreenState extends ConsumerState<RouletteScreen> with SingleTick
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            if (desc.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(desc, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70)),
-            ],
             const SizedBox(height: 24),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('GENIAL', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: _wonRespin ? Colors.amber : Colors.redAccent),
+              onPressed: () {
+                Navigator.pop(ctx);
+                if (_wonRespin) _spin(); // Auto-reintento
+              },
+              child: Text(
+                _wonRespin ? 'GIRAR DE NUEVO' : 'GENIAL', 
+                style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
+              ),
             ),
           ],
         ),
@@ -164,7 +207,7 @@ class _RouletteScreenState extends ConsumerState<RouletteScreen> with SingleTick
                       animation: _animation,
                       builder: (context, child) {
                         return Transform.rotate(
-                          angle: _animation.value * 10 * pi,
+                          angle: _animation.value * _stopAngle,
                           child: _RouletteWheel(prizes: prizes.where((p) => p.isActive).toList()),
                         );
                       },

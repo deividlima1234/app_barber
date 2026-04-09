@@ -6,6 +6,7 @@ class Prize {
   final int pointCost;
   final int? stock;
   final bool isActive;
+  final bool isRespin;
 
   Prize({
     this.id,
@@ -15,6 +16,7 @@ class Prize {
     this.pointCost = 0,
     this.stock,
     this.isActive = true,
+    this.isRespin = false,
   });
 
   factory Prize.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Prize {
       pointCost: json['pointCost'] ?? 0,
       stock: json['stock'],
       isActive: json['isActive'] ?? true,
+      isRespin: json['isRespin'] ?? false,
     );
   }
 
@@ -38,6 +41,7 @@ class Prize {
       'pointCost': pointCost,
       'stock': stock,
       'isActive': isActive,
+      'isRespin': isRespin,
     };
   }
 
@@ -49,6 +53,7 @@ class Prize {
     int? pointCost,
     int? stock,
     bool? isActive,
+    bool? isRespin,
   }) {
     return Prize(
       id: id ?? this.id,
@@ -58,6 +63,7 @@ class Prize {
       pointCost: pointCost ?? this.pointCost,
       stock: stock ?? this.stock,
       isActive: isActive ?? this.isActive,
+      isRespin: isRespin ?? this.isRespin,
     );
   }
 }

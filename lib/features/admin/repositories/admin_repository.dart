@@ -4,6 +4,7 @@ import 'package:barber_gold/providers/auth_provider.dart';
 import 'package:barber_gold/features/admin/models/admin_dashboard_dto.dart';
 import 'package:barber_gold/features/admin/models/card_admin_dto.dart';
 import 'package:barber_gold/features/admin/models/service_catalog_dto.dart';
+import 'package:barber_gold/features/admin/models/admin_prize_redemption_dto.dart';
 
 final adminDioProvider = Provider<Dio>((ref) => ref.watch(dioClientProvider).dio);
 
@@ -69,5 +70,15 @@ class AdminRepository {
     await _dio.put('/admin/users/$userId/password-reset', data: {
       'newPassword': newPassword,
     });
+  }
+
+  // Redemptions
+  Future<List<AdminPrizeRedemptionDto>> getPendingRedemptions() async {
+    final response = await _dio.get('/redemptions/admin/all');
+    return (response.data as List).map((e) => AdminPrizeRedemptionDto.fromJson(e)).toList();
+  }
+
+  Future<void> deliverPrize(int id) async {
+    await _dio.put('/redemptions/admin/$id/deliver');
   }
 }

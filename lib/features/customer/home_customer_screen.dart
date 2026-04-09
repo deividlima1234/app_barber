@@ -58,9 +58,17 @@ class HomeCustomerScreen extends ConsumerWidget {
               style: GoogleFonts.outfit(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900)),
           ],
         ),
-        IconButton(
-          icon: const Icon(Icons.power_settings_new, color: Colors.grey),
-          onPressed: () => _confirmLogout(context, ref),
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.emoji_events, color: Colors.amber),
+              onPressed: () => context.push('/my-prizes'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.power_settings_new, color: Colors.grey),
+              onPressed: () => _confirmLogout(context, ref),
+            ),
+          ],
         ),
       ],
     );

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "619245159073",
+    "project_id": "barbergold-6e02a",
+    "storage_bucket": "barbergold-6e02a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619245159073:android:6b7128bbff1812e36e66e0",
+        "android_client_info": {
+          "package_name": "com.harkaynet.barber"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3WlrrDoY0dh56HF5GBGCV5_iT6iAGqk0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

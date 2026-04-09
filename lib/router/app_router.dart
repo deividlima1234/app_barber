@@ -6,6 +6,7 @@ import 'package:barber_gold/features/customer/customer_layout.dart';
 import 'package:barber_gold/features/barber/barber_layout.dart';
 import 'package:barber_gold/features/admin/admin_layout.dart';
 import 'package:barber_gold/features/customer/roulette_screen.dart';
+import 'package:barber_gold/features/customer/my_prizes_screen.dart';
 import 'package:barber_gold/features/shared/about_screen.dart';
 import 'package:barber_gold/features/barber/scanner_pro_screen.dart';
 import 'package:barber_gold/features/auth/welcome_guide_screen.dart';
@@ -79,6 +80,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/scanner',
         builder: (context, state) => const ScannerProScreen(),
+      ),
+      GoRoute(
+        path: '/my-prizes',
+        builder: (context, state) => const MyPrizesScreen(),
       ),
     ],
   );

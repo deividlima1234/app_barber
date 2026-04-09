@@ -1,4 +1,4 @@
-package com.harkaynet.barber_gold
+package com.harkaynet.barber
 
 import io.flutter.embedding.android.FlutterActivity
 

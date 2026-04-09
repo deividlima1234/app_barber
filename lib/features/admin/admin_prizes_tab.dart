@@ -185,6 +185,22 @@ class AdminPrizesTab extends ConsumerWidget {
                 style: const TextStyle(color: Colors.white), 
                 decoration: const InputDecoration(labelText: 'Stock (Opcional)', helperText: 'Vacío si es ilimitado'),
               ),
+              const SizedBox(height: 16),
+              StatefulBuilder(
+                builder: (context, setState) {
+                  return CheckboxListTile(
+                    title: const Text('¿Es Re-intento?', style: TextStyle(color: Colors.white, fontSize: 14)),
+                    subtitle: const Text('Si sale este premio, el usuario no pierde puntos y gira de nuevo.', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                    value: prize?.isRespin ?? false,
+                    activeColor: Colors.amber,
+                    onChanged: (val) {
+                      setState(() {
+                         prize = (prize ?? Prize(name: '')).copyWith(isRespin: val ?? false);
+                      });
+                    },
+                  );
+                }
+              ),
             ],
           ),
         ),
@@ -198,6 +214,7 @@ class AdminPrizesTab extends ConsumerWidget {
                 description: descController.text,
                 weight: int.tryParse(weightController.text) ?? 10,
                 stock: int.tryParse(stockController.text),
+                isRespin: prize?.isRespin ?? false,
               );
               if (prize == null) {
                 ref.read(prizeActionProvider.notifier).createPrize(newPrize);
@@ -240,6 +257,10 @@ class _PrizeCard extends ConsumerWidget {
                 _buildTag('Peso: ${prize.weight}', Colors.blueAccent),
                 const SizedBox(width: 8),
                 _buildTag(prize.stock == null ? 'Ilimitado' : 'Stock: ${prize.stock}', Colors.greenAccent),
+                if (prize.isRespin) ...[
+                  const SizedBox(width: 8),
+                  _buildTag('RE-INTENTO', Colors.amber),
+                ],
               ],
             ),
           ],
