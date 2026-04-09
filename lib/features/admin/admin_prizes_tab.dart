@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:barber_gold/features/admin/models/prize.dart';
 import 'package:barber_gold/features/admin/providers/prize_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class AdminPrizesTab extends ConsumerWidget {
   const AdminPrizesTab({super.key});
@@ -71,7 +72,12 @@ class AdminPrizesTab extends ConsumerWidget {
               ),
             ),
             loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator(color: Colors.redAccent))),
-            error: (e, st) => SliverToBoxAdapter(child: Center(child: Text('Error: $e', style: const TextStyle(color: Colors.red)))),
+            error: (e, st) => SliverToBoxAdapter(
+              child: FriendlyErrorWidget(
+                message: 'No pudimos cargar la lista de premios técnicos.',
+                onRetry: () => ref.invalidate(prizesProvider),
+              ),
+            ),
           ),
           
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -112,7 +118,10 @@ class AdminPrizesTab extends ConsumerWidget {
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Text('Error: $e'),
+        error: (e, st) => FriendlyErrorWidget(
+          message: 'Error al obtener costo.',
+          onRetry: () => ref.invalidate(rouletteCostProvider),
+        ),
       ),
     );
   }

@@ -1,15 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:barber_gold/network/dio_client.dart';
 import 'package:barber_gold/features/barber/models/barber_dashboard_dto.dart';
 import 'package:barber_gold/features/barber/models/service_catalog.dart';
-
-final dioProvider = Provider<Dio>((ref) {
-  return DioClient().dio;
-});
+import 'package:barber_gold/providers/auth_provider.dart';
 
 final barberRepositoryProvider = Provider<BarberRepository>((ref) {
-  return BarberRepository(ref.watch(dioProvider));
+  final dioClient = ref.watch(dioClientProvider);
+  return BarberRepository(dioClient.dio);
 });
 
 class BarberRepository {
@@ -40,10 +37,10 @@ class BarberRepository {
     });
   }
   
-  Future<void> registerCustomer(String qrToken, String username, String password, String fullName) async {
+  Future<void> registerCustomer(String qrToken, String email, String password, String fullName) async {
     await _dio.post('/customers/activate', data: {
       'qrToken': qrToken,
-      'username': username,
+      'email': email,
       'password': password,
       'fullName': fullName,
     });

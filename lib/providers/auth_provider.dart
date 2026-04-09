@@ -70,12 +70,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> login(String username, String password) async {
+  Future<void> login(String email, String password) async {
     // Marcamos estado inicial cargando/limpiando error
     state = state.copyWith(status: AuthStatus.checking, errorMessage: null);
 
     try {
-      final response = await _authRepository.login(username, password);
+      final response = await _authRepository.login(email, password);
       
       state = AuthState(
         status: AuthStatus.authenticated,

@@ -72,7 +72,7 @@ class _UserProfileDialogState extends ConsumerState<UserProfileDialog> {
             ),
             const SizedBox(height: 24),
             // ID Card style info
-            _buildInfoRow('USERNAME', widget.profile.username, isLocked: true),
+            _buildInfoRow('EMAIL', widget.profile.email, isLocked: true),
             const SizedBox(height: 16),
             _buildInfoRow(
               'NOMBRE REAL',

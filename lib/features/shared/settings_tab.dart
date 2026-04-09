@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:barber_gold/providers/auth_provider.dart';
 import 'package:barber_gold/providers/profile_provider.dart';
 import 'package:barber_gold/features/shared/widgets/user_profile_dialog.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 // Importamos los proveedores que necesitan ser limpiados al cerrar sesión
 import 'package:barber_gold/features/admin/providers/admin_provider.dart';
@@ -41,7 +42,10 @@ class SettingsTab extends ConsumerWidget {
               profileAsync.when(
                 data: (profile) => _buildProfileHeader(context, profile),
                 loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
-                error: (e, _) => Text('Error al cargar perfil: $e', style: const TextStyle(color: Colors.redAccent)),
+                error: (e, _) => FriendlyErrorWidget(
+                  message: 'No logramos sincronizar tu perfil. Es posible que el servidor esté en mantenimiento.',
+                  onRetry: () => ref.invalidate(userProfileProvider),
+                ),
               ),
 
               const SizedBox(height: 32),
@@ -165,7 +169,7 @@ class SettingsTab extends ConsumerWidget {
                         style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        profile.username,
+                        profile.email,
                         style: GoogleFonts.outfit(color: Colors.white38, fontSize: 14),
                       ),
                     ],

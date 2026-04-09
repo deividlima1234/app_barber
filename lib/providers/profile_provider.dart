@@ -4,14 +4,21 @@ import 'package:barber_gold/config/api_config.dart';
 import 'package:barber_gold/models/user_profile.dart';
 
 final userProfileProvider = StateNotifierProvider<UserProfileNotifier, AsyncValue<UserProfile>>((ref) {
-  return UserProfileNotifier(ref);
+  final authState = ref.watch(authProvider);
+  
+  // Si no está autenticado, devolvemos un estado de error o nulo que se limpiará al loguearse
+  if (authState.status != AuthStatus.authenticated) {
+    return UserProfileNotifier(ref, shouldFetch: false);
+  }
+  
+  return UserProfileNotifier(ref, shouldFetch: true);
 });
 
 class UserProfileNotifier extends StateNotifier<AsyncValue<UserProfile>> {
   final Ref _ref;
 
-  UserProfileNotifier(this._ref) : super(const AsyncValue.loading()) {
-    fetchProfile();
+  UserProfileNotifier(this._ref, {bool shouldFetch = true}) : super(const AsyncValue.loading()) {
+    if (shouldFetch) fetchProfile();
   }
 
   Future<void> fetchProfile() async {

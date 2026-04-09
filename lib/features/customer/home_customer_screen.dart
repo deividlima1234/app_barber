@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class HomeCustomerScreen extends ConsumerWidget {
   const HomeCustomerScreen({super.key});
@@ -34,7 +35,10 @@ class HomeCustomerScreen extends ConsumerWidget {
             ),
           ),
           loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
-          error: (e, st) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+          error: (e, st) => FriendlyErrorWidget(
+            message: 'No logramos sincronizar tu cartera de puntos Cyber-Gold. Verifica tu conexión.',
+            onRetry: () => ref.invalidate(customerDashboardProvider),
+          ),
         ),
       ),
     );

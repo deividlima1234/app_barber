@@ -1,6 +1,6 @@
 class UserProfile {
   final String id;
-  final String username;
+  final String email;
   final String fullName;
   final String? phone;
   final String role;
@@ -10,7 +10,7 @@ class UserProfile {
 
   UserProfile({
     required this.id,
-    required this.username,
+    required this.email,
     required this.fullName,
     this.phone,
     required this.role,
@@ -22,7 +22,7 @@ class UserProfile {
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       id: json['id'],
-      username: json['username'],
+      email: json['email'] ?? '',
       fullName: json['fullName'],
       phone: json['phone'],
       role: json['role'],
@@ -38,7 +38,7 @@ class UserProfile {
   }) {
     return UserProfile(
       id: id,
-      username: username,
+      email: email,
       fullName: fullName ?? this.fullName,
       phone: phone ?? this.phone,
       role: role,

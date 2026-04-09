@@ -9,12 +9,12 @@ class AuthRepository {
 
   AuthRepository(this._dioClient);
 
-  Future<Map<String, dynamic>> login(String username, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await _dioClient.dio.post(
         ApiConfig.login,
         data: {
-          'username': username,
+          'email': email,
           'password': password,
         },
       );
@@ -29,7 +29,7 @@ class AuthRepository {
           role = data['roles'][0];
         }
         await _storage.write(key: 'user_role', value: role);
-        await _storage.write(key: 'username', value: data['username'] ?? username);
+        await _storage.write(key: 'user_email', value: data['email'] ?? email);
         await _storage.write(key: 'first_login', value: (data['firstLogin'] ?? true).toString());
         
         return {
@@ -44,7 +44,7 @@ class AuthRepository {
       String errorMessage = 'Error de conexión con el servidor';
       if (e.response != null) {
         if (e.response?.statusCode == 401 || e.response?.statusCode == 400) {
-          errorMessage = 'Usuario o contraseña incorrectos';
+          errorMessage = 'Correo o contraseña incorrectos';
         } else {
           errorMessage = e.response?.data['message'] ?? errorMessage;
         }
@@ -58,10 +58,7 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
-    await _storage.delete(key: 'jwt_token');
-    await _storage.delete(key: 'user_role');
-    await _storage.delete(key: 'username');
-    await _storage.delete(key: 'first_login');
+    await _storage.deleteAll(); // Limpieza total garantizada
   }
 
   Future<Map<String, dynamic>> checkPersistedSession() async {

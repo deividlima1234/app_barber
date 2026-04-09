@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:barber_gold/network/dio_client.dart';
+import 'package:barber_gold/providers/auth_provider.dart';
 import 'package:barber_gold/features/admin/models/admin_dashboard_dto.dart';
 import 'package:barber_gold/features/admin/models/card_admin_dto.dart';
 import 'package:barber_gold/features/admin/models/service_catalog_dto.dart';
 
-final adminDioProvider = Provider<Dio>((ref) => DioClient().dio);
+final adminDioProvider = Provider<Dio>((ref) => ref.watch(dioClientProvider).dio);
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
   return AdminRepository(ref.watch(adminDioProvider));

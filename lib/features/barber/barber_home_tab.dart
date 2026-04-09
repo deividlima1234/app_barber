@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:barber_gold/features/barber/providers/barber_provider.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class BarberHomeTab extends ConsumerWidget {
   const BarberHomeTab({super.key});
@@ -125,8 +126,9 @@ class BarberHomeTab extends ConsumerWidget {
             ),
           ),
           loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
-          error: (error, stack) => Center(
-            child: Text('Error al cargar datos: $error', style: const TextStyle(color: Colors.red)),
+          error: (error, stack) => FriendlyErrorWidget(
+            message: 'No logramos recuperar tus estadísticas de hoy. ¡No te preocupes, tus servicios siguen guardados!',
+            onRetry: () => ref.invalidate(barberDashboardProvider),
           ),
         ),
       ),

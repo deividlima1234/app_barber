@@ -4,6 +4,7 @@ import 'package:barber_gold/features/admin/models/service_catalog_dto.dart';
 import 'package:barber_gold/features/admin/providers/admin_provider.dart';
 import 'package:barber_gold/features/admin/repositories/admin_repository.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class AdminServicesTab extends ConsumerStatefulWidget {
   const AdminServicesTab({super.key});
@@ -61,7 +62,10 @@ class _AdminServicesTabState extends ConsumerState<AdminServicesTab> {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
-            error: (e, st) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+            error: (e, st) => FriendlyErrorWidget(
+              message: 'No logramos cargar el catálogo de servicios. Reintenta establecer la conexión.',
+              onRetry: () => ref.invalidate(adminServicesProvider),
+            ),
           ),
         ),
       ],

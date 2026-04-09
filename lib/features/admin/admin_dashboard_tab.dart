@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:barber_gold/features/admin/providers/admin_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class AdminDashboardTab extends ConsumerWidget {
   const AdminDashboardTab({super.key});
@@ -53,14 +54,10 @@ class AdminDashboardTab extends ConsumerWidget {
             );
           },
           loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
-          error: (e, st) => Center(child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
-              const SizedBox(height: 16),
-              Text('Error al cargar datos: $e', style: const TextStyle(color: Colors.white)),
-            ],
-          )),
+          error: (e, st) => FriendlyErrorWidget(
+            message: 'No pudimos cargar las métricas financieras en este momento.',
+            onRetry: () => ref.invalidate(adminDashboardProvider),
+          ),
         ),
       ),
     );

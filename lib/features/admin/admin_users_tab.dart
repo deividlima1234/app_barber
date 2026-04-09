@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:barber_gold/features/admin/providers/admin_provider.dart';
 import 'package:barber_gold/features/admin/repositories/admin_repository.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class AdminUsersTab extends ConsumerWidget {
   const AdminUsersTab({super.key});
@@ -60,7 +61,10 @@ class AdminUsersTab extends ConsumerWidget {
                     );
                   },
                   loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
-                  error: (e, st) => _ErrorView(error: e.toString(), onRetry: () => ref.invalidate(adminUsersProvider)),
+                  error: (e, st) => FriendlyErrorWidget(
+                    message: 'Hubo un problema al contactar con la base de datos de usuarios.',
+                    onRetry: () => ref.invalidate(adminUsersProvider),
+                  ),
                 ),
               ),
             ],
@@ -138,7 +142,7 @@ class _UserCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        user['fullName'] ?? user['username'],
+                        user['fullName'] ?? user['email'],
                         style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       Container(
@@ -173,7 +177,7 @@ class _UserCard extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _InfoItem(label: 'PHONE / TARGET', value: user['username'] ?? 'N/A'),
+                _InfoItem(label: 'EMAIL ADDRESS', value: user['email'] ?? 'N/A'),
                 if (isCustomer) 
                   _InfoItem(label: 'REWARD POINTS', value: '${user['totalPoints'] ?? 0} PTS', valueColor: Colors.amberAccent),
                 _InfoItem(label: 'MEMBER SINCE', value: dateStr),

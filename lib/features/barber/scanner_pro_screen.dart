@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:barber_gold/features/barber/providers/barber_provider.dart';
 import 'package:barber_gold/features/barber/repositories/barber_repository.dart';
 import 'package:barber_gold/features/barber/models/service_catalog.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class ScannerProScreen extends ConsumerStatefulWidget {
   const ScannerProScreen({super.key});
@@ -219,7 +220,10 @@ class _ServiceSelectorSheetState extends ConsumerState<_ServiceSelectorSheet> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
-              error: (e, st) => Center(child: Text('Error: $e')),
+              error: (e, st) => FriendlyErrorWidget(
+                message: 'No logramos cargar la lista de servicios para cobrar.',
+                onRetry: () => ref.invalidate(activeServicesProvider),
+              ),
             ),
           ),
           
@@ -307,7 +311,7 @@ class _RegisterCustomerSheet extends ConsumerStatefulWidget {
 class _RegisterCustomerSheetState extends ConsumerState<_RegisterCustomerSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passController = TextEditingController();
   bool _isSubmitting = false;
 
@@ -348,17 +352,17 @@ class _RegisterCustomerSheetState extends ConsumerState<_RegisterCustomerSheet> 
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: 'Teléfono (Será su Usuario)',
+                  labelText: 'Correo Electrónico',
                   labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
                   fillColor: const Color(0xFF1E1E1E),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                validator: (val) => val != null && val.trim().length >= 6 ? null : 'Mínimo 6 dígitos',
+                validator: (val) => val != null && val.trim().contains('@') ? null : 'Email inválido',
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -401,7 +405,7 @@ class _RegisterCustomerSheetState extends ConsumerState<_RegisterCustomerSheet> 
       final repository = ref.read(barberRepositoryProvider);
       await repository.registerCustomer(
         widget.qrCode,
-        _phoneController.text.trim().toLowerCase(),
+        _emailController.text.trim().toLowerCase(),
         _passController.text,
         _nameController.text.trim(),
       );
@@ -420,6 +424,14 @@ class _RegisterCustomerSheetState extends ConsumerState<_RegisterCustomerSheet> 
         );
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passController.dispose();
+    super.dispose();
   }
 }
 

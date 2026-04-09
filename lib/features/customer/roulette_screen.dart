@@ -7,6 +7,7 @@ import 'package:barber_gold/features/admin/providers/prize_provider.dart';
 import 'package:barber_gold/features/customer/providers/customer_provider.dart';
 import 'package:barber_gold/features/admin/repositories/prize_repository.dart';
 import 'package:lottie/lottie.dart';
+import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class RouletteScreen extends ConsumerStatefulWidget {
   const RouletteScreen({super.key});
@@ -181,7 +182,10 @@ class _RouletteScreenState extends ConsumerState<RouletteScreen> with SingleTick
                 ),
               ),
               loading: () => const CircularProgressIndicator(),
-              error: (e, st) => Text('Error cargando premios: $e'),
+              error: (e, st) => FriendlyErrorWidget(
+                message: 'No pudimos cargar los premios de la ruleta. ¡Vuelve a intentarlo!',
+                onRetry: () => ref.invalidate(prizesProvider),
+              ),
             ),
             
             const Spacer(),
@@ -221,7 +225,10 @@ class _RouletteScreenState extends ConsumerState<RouletteScreen> with SingleTick
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error: $e')),
+        error: (e, st) => FriendlyErrorWidget(
+          message: 'Error al conectar con tu cartera de puntos.',
+          onRetry: () => ref.invalidate(customerDashboardProvider),
+        ),
       ),
     );
   }
