@@ -15,52 +15,82 @@ class AdminPrizesTab extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.redAccent,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: Text('NUEVO PREMIO', style: GoogleFonts.orbitron(fontSize: 12, fontWeight: FontWeight.bold)),
         onPressed: () => _showPrizeDialog(context, ref),
-        child: const Icon(Icons.add, color: Colors.white),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(24, 60, 24, 32),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.redAccent.withOpacity(0.15), Colors.black],
+                ),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Gestión de Ruleta',
-                    style: GoogleFonts.orbitron(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'RULETA GOLD',
+                            style: GoogleFonts.orbitron(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                          Text(
+                            'CONFIGURACIÓN DE GAMIFICACIÓN',
+                            style: GoogleFonts.outfit(
+                              color: Colors.redAccent,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Icon(Icons.settings_suggest, color: Colors.white24, size: 40),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Configura los premios y probabilidades del sistema.',
-                    style: TextStyle(color: Colors.grey[400]),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Card para el costo del giro
-                  _buildCostCard(context, ref, costAsync),
-                  
                   const SizedBox(height: 32),
-                  Text(
-                    'Premios Activos',
-                    style: GoogleFonts.orbitron(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.redAccent,
-                    ),
-                  ),
+                  _buildCostCard(context, ref, costAsync),
                 ],
               ),
             ),
           ),
           
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            sliver: SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  'LISTADO DE PREMIOS',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white38,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           prizesAsync.when(
             data: (prizes) => SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -74,13 +104,13 @@ class AdminPrizesTab extends ConsumerWidget {
             loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator(color: Colors.redAccent))),
             error: (e, st) => SliverToBoxAdapter(
               child: FriendlyErrorWidget(
-                message: 'No pudimos cargar la lista de premios técnicos.',
+                message: 'No logramos sincronizar los premios con el servidor.',
                 onRetry: () => ref.invalidate(prizesProvider),
               ),
             ),
           ),
           
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
       ),
     );
@@ -88,40 +118,59 @@ class AdminPrizesTab extends ConsumerWidget {
 
   Widget _buildCostCard(BuildContext context, WidgetRef ref, AsyncValue<int> costAsync) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+        color: const Color(0xFF111111),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.redAccent.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
       ),
       child: costAsync.when(
         data: (cost) => Row(
           children: [
-            const Icon(Icons.stars, color: Colors.amber, size: 40),
-            const SizedBox(width: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.stars_rounded, color: Colors.amber, size: 32),
+            ),
+            const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Costo por Giro', style: TextStyle(color: Colors.grey)),
+                  Text('COSTO POR GIRO', style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold)),
                   Text(
-                    '$cost Puntos',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                    '$cost PUNTOS',
+                    style: GoogleFonts.orbitron(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
                   ),
                 ],
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.redAccent),
-              onPressed: () => _showCostDialog(context, ref, cost),
+            Material(
+              color: Colors.redAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => _showCostDialog(context, ref, cost),
+                child: const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Icon(Icons.edit_note_rounded, color: Colors.redAccent),
+                ),
+              ),
             ),
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => FriendlyErrorWidget(
-          message: 'Error al obtener costo.',
-          onRetry: () => ref.invalidate(rouletteCostProvider),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        error: (e, st) => const Text('Error al cargar', style: TextStyle(color: Colors.redAccent)),
       ),
     );
   }
@@ -132,16 +181,25 @@ class AdminPrizesTab extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('Editar Costo de Ruleta', style: TextStyle(color: Colors.white)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: const BorderSide(color: Colors.white10)),
+        title: Text('AJUSTAR COSTO', style: GoogleFonts.orbitron(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(labelText: 'Puntos por giro'),
+          autofocus: true,
+          style: GoogleFonts.outfit(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            suffixText: 'PTS',
+            suffixStyle: GoogleFonts.outfit(color: Colors.white24),
+            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white10)),
+            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCELAR', style: TextStyle(color: Colors.white24))),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             onPressed: () {
               final newCost = int.tryParse(controller.text);
               if (newCost != null) {
@@ -149,7 +207,7 @@ class AdminPrizesTab extends ConsumerWidget {
                 Navigator.pop(ctx);
               }
             },
-            child: const Text('Guardar'),
+            child: const Text('ACTUALIZAR'),
           ),
         ],
       ),
@@ -161,73 +219,116 @@ class AdminPrizesTab extends ConsumerWidget {
     final descController = TextEditingController(text: prize?.description);
     final weightController = TextEditingController(text: prize?.weight.toString() ?? '10');
     final stockController = TextEditingController(text: prize?.stock?.toString() ?? '');
+    bool isRespin = prize?.isRespin ?? false;
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: Text(prize == null ? 'Nuevo Premio' : 'Editar Premio', style: const TextStyle(color: Colors.white)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Nombre')),
-              TextField(controller: descController, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Descripción')),
-              TextField(
-                controller: weightController, 
-                keyboardType: TextInputType.number, 
-                style: const TextStyle(color: Colors.white), 
-                decoration: const InputDecoration(labelText: 'Peso (Probabilidad)', helperText: 'Más alto = Más común'),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1A1A1A),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: const BorderSide(color: Colors.white10)),
+            title: Text(prize == null ? 'NUEVO PREMIO' : 'EDITAR PREMIO', style: GoogleFonts.orbitron(color: Colors.white, fontSize: 18)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _dialogField('Nombre del Premio', nameController, 'Ej: Corte Gratis'),
+                  const SizedBox(height: 16),
+                  _dialogField('Descripción', descController, 'Detalles del premio...'),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(child: _dialogField('Peso (Prob.)', weightController, '1-100', isNumeric: true)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _dialogField('Stock', stockController, 'Ilimitado', isNumeric: true)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Probabilidad estimada: ${_getWeightLabel(int.tryParse(weightController.text) ?? 0)}',
+                    style: TextStyle(color: _getWeightColor(int.tryParse(weightController.text) ?? 0), fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(12)),
+                    child: CheckboxListTile(
+                      title: Text('¿ES RE-INTENTO?', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                      subtitle: const Text('El usuario gira de nuevo sin perder puntos.', style: TextStyle(color: Colors.white24, fontSize: 11)),
+                      value: isRespin,
+                      activeColor: Colors.amber,
+                      onChanged: (val) => setState(() => isRespin = val ?? false),
+                    ),
+                  ),
+                ],
               ),
-              TextField(
-                controller: stockController, 
-                keyboardType: TextInputType.number, 
-                style: const TextStyle(color: Colors.white), 
-                decoration: const InputDecoration(labelText: 'Stock (Opcional)', helperText: 'Vacío si es ilimitado'),
-              ),
-              const SizedBox(height: 16),
-              StatefulBuilder(
-                builder: (context, setState) {
-                  return CheckboxListTile(
-                    title: const Text('¿Es Re-intento?', style: TextStyle(color: Colors.white, fontSize: 14)),
-                    subtitle: const Text('Si sale este premio, el usuario no pierde puntos y gira de nuevo.', style: TextStyle(color: Colors.grey, fontSize: 11)),
-                    value: prize?.isRespin ?? false,
-                    activeColor: Colors.amber,
-                    onChanged: (val) {
-                      setState(() {
-                         prize = (prize ?? Prize(name: '')).copyWith(isRespin: val ?? false);
-                      });
-                    },
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCELAR', style: TextStyle(color: Colors.white24))),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                onPressed: () {
+                  final newPrize = Prize(
+                    id: prize?.id,
+                    name: nameController.text,
+                    description: descController.text,
+                    weight: int.tryParse(weightController.text) ?? 10,
+                    stock: int.tryParse(stockController.text),
+                    isRespin: isRespin,
+                    isActive: prize?.isActive ?? true,
                   );
-                }
+                  if (prize == null) {
+                    ref.read(prizeActionProvider.notifier).createPrize(newPrize);
+                  } else {
+                    ref.read(prizeActionProvider.notifier).updatePrize(newPrize);
+                  }
+                  Navigator.pop(ctx);
+                },
+                child: const Text('GUARDAR'),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () {
-              final newPrize = Prize(
-                id: prize?.id,
-                name: nameController.text,
-                description: descController.text,
-                weight: int.tryParse(weightController.text) ?? 10,
-                stock: int.tryParse(stockController.text),
-                isRespin: prize?.isRespin ?? false,
-              );
-              if (prize == null) {
-                ref.read(prizeActionProvider.notifier).createPrize(newPrize);
-              } else {
-                ref.read(prizeActionProvider.notifier).updatePrize(newPrize);
-              }
-              Navigator.pop(ctx);
-            },
-            child: const Text('Guardar'),
-          ),
-        ],
+          );
+        }
       ),
     );
+  }
+
+  Widget _dialogField(String label, TextEditingController controller, String hint, {bool isNumeric = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(), style: GoogleFonts.orbitron(color: Colors.redAccent, fontSize: 9, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+          style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Colors.white10),
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.03),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getWeightLabel(int weight) {
+    if (weight <= 2) return 'LEGENDARIO (MUY RARO)';
+    if (weight <= 5) return 'EPICO (RARO)';
+    if (weight <= 15) return 'RARO (POCO COMÚN)';
+    return 'COMÚN';
+  }
+
+  Color _getWeightColor(int weight) {
+    if (weight <= 2) return Colors.amber;
+    if (weight <= 5) return Colors.purpleAccent;
+    if (weight <= 15) return Colors.blueAccent;
+    return Colors.grey;
   }
 }
 
@@ -240,58 +341,117 @@ class _PrizeCard extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF121212),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: prize.isActive ? Colors.redAccent.withOpacity(0.1) : Colors.grey.withOpacity(0.1)),
+        color: prize.isActive ? const Color(0xFF151515) : Colors.white.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: prize.isActive ? Colors.white.withOpacity(0.05) : Colors.white.withOpacity(0.02),
+        ),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        title: Text(prize.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (prize.description != null) Text(prize.description!, style: TextStyle(color: Colors.grey[500])),
-            const SizedBox(height: 8),
-            Row(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => const AdminPrizesTab()._showPrizeDialog(context, ref, prize),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
               children: [
-                _buildTag('Peso: ${prize.weight}', Colors.blueAccent),
-                const SizedBox(width: 8),
-                _buildTag(prize.stock == null ? 'Ilimitado' : 'Stock: ${prize.stock}', Colors.greenAccent),
-                if (prize.isRespin) ...[
-                  const SizedBox(width: 8),
-                  _buildTag('RE-INTENTO', Colors.amber),
-                ],
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: prize.isActive ? Colors.redAccent.withOpacity(0.05) : Colors.white.withOpacity(0.02),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    prize.isRespin ? Icons.autorenew_rounded : Icons.card_giftcard_rounded,
+                    color: prize.isActive ? Colors.redAccent : Colors.white24,
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        prize.name,
+                        style: GoogleFonts.outfit(
+                          color: prize.isActive ? Colors.white : Colors.white24,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (prize.description != null)
+                        Text(
+                          prize.description!,
+                          style: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          _tag('PESO: ${prize.weight}', prize.isActive ? Colors.blueAccent : Colors.white10),
+                          _tag(prize.stock == null ? 'INF.' : 'STOCK: ${prize.stock}', prize.isActive ? Colors.greenAccent : Colors.white10),
+                          if (prize.isRespin) _tag('RE-INTENTO', prize.isActive ? Colors.amber : Colors.white10),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  children: [
+                    Switch(
+                      value: prize.isActive,
+                      onChanged: (val) => ref.read(prizeActionProvider.notifier).togglePrize(prize.id!),
+                      activeColor: Colors.redAccent,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.white12, size: 20),
+                      onPressed: () => _confirmDelete(context, ref),
+                    ),
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Switch(
-              value: prize.isActive,
-              onChanged: (_) => ref.read(prizeActionProvider.notifier).togglePrize(prize.id!),
-              activeColor: Colors.redAccent,
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.grey),
-              onPressed: () => ref.read(prizeActionProvider.notifier).deletePrize(prize.id!),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTag(String text, Color color) {
+  void _confirmDelete(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: const Text('¿Eliminar Premio?', style: TextStyle(color: Colors.white)),
+        content: Text('Esta acción no se puede deshacer.', style: TextStyle(color: Colors.grey[400])),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCELAR')),
+          TextButton(
+            onPressed: () {
+              ref.read(prizeActionProvider.notifier).deletePrize(prize.id!);
+              Navigator.pop(context);
+            },
+            child: const Text('ELIMINAR', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tag(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(text, style: TextStyle(color: color, fontSize: 12)),
+      child: Text(
+        text,
+        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+      ),
     );
   }
 }

@@ -73,10 +73,9 @@ class AdminRepository {
   }
 
   // Redemptions
-  Future<List<AdminPrizeRedemptionDto>> getPendingRedemptions() async {
-    print("📡 [REPO] Solicitando canjes...");
-    final response = await _dio.get('/redemptions/admin/all');
-    print("📡 [REPO] DATOS DEL SERVIDOR: ${response.data}");
+  Future<List<AdminPrizeRedemptionDto>> getRedemptionsByStatus(String status) async {
+    print("📡 [REPO] Solicitando canjes con estado: $status...");
+    final response = await _dio.get('/redemptions/admin/all', queryParameters: {'status': status});
     return (response.data as List).map((e) => AdminPrizeRedemptionDto.fromJson(e)).toList();
   }
 

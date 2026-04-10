@@ -10,15 +10,16 @@ class AdminRedemptionsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final redemptionsAsync = ref.watch(adminRedemptionsProvider);
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          toolbarHeight: 100,
+          flexibleSpace: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 60, 24, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -32,53 +33,80 @@ class AdminRedemptionsTab extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  'Gestiona y entrega los premios ganados en el sistema.',
-                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                  'Gestiona las entregas de premios ganados.',
+                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
                 ),
               ],
             ),
           ),
-          Expanded(
-            child: redemptionsAsync.when(
-              data: (prizes) {
-                if (prizes.isEmpty) {
-                  return _buildEmptyState();
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: prizes.length,
-                  itemBuilder: (context, index) => _RedemptionAdminCard(redemption: prizes[index]),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
-              error: (err, st) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Text(
-                    'ERROR CRÍTICO: $err', 
-                    style: const TextStyle(color: Colors.redAccent, fontSize: 12),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
+          bottom: TabBar(
+            indicatorColor: Colors.redAccent,
+            indicatorWeight: 3,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white24,
+            labelStyle: GoogleFonts.orbitron(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
+            tabs: const [
+              Tab(text: 'PENDIENTES'),
+              Tab(text: 'HISTORIAL'),
+            ],
           ),
-        ],
+        ),
+        body: const TabBarView(
+          children: [
+            _RedemptionsList(status: 'PENDING'),
+            _RedemptionsList(status: 'DELIVERED'),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildEmptyState() {
+class _RedemptionsList extends ConsumerWidget {
+  final String status;
+  const _RedemptionsList({required this.status});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = status == 'PENDING' 
+        ? adminPendingRedemptionsProvider 
+        : adminHistoryRedemptionsProvider;
+    
+    final redemptionsAsync = ref.watch(provider);
+
+    return redemptionsAsync.when(
+      data: (prizes) {
+        if (prizes.isEmpty) {
+          return _buildEmptyState(status == 'PENDING');
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: prizes.length,
+          itemBuilder: (context, index) => _RedemptionAdminCard(
+            redemption: prizes[index],
+            isHistory: status == 'DELIVERED',
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
+      error: (err, st) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.white24))),
+    );
+  }
+
+  Widget _buildEmptyState(bool isPending) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.check_circle_outline, size: 64, color: Colors.white24),
+          Icon(
+            isPending ? Icons.check_circle_outline : Icons.history_toggle_off,
+            size: 64, 
+            color: Colors.white10
+          ),
           const SizedBox(height: 16),
           Text(
-            '¡No hay canjes pendientes!',
-            style: GoogleFonts.inter(color: Colors.white54),
+            isPending ? '¡Todo entregado!' : 'No hay historial de entregas.',
+            style: GoogleFonts.inter(color: Colors.white24),
           ),
         ],
       ),
@@ -88,11 +116,14 @@ class AdminRedemptionsTab extends ConsumerWidget {
 
 class _RedemptionAdminCard extends ConsumerWidget {
   final AdminPrizeRedemptionDto redemption;
-  const _RedemptionAdminCard({required this.redemption});
+  final bool isHistory;
+  const _RedemptionAdminCard({
+    required this.redemption,
+    this.isHistory = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print("🎨 [UI] Dibujando tarjeta para el premio ID: ${redemption.id}");
     String dateStr = "N/A";
     try {
       dateStr = DateFormat('dd/MM HH:mm').format(redemption.createdAt);
@@ -101,7 +132,7 @@ class _RedemptionAdminCard extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        color: isHistory ? Colors.white.withOpacity(0.02) : const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
@@ -111,12 +142,16 @@ class _RedemptionAdminCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Encabezado: Info Cliente
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: Colors.redAccent.withOpacity(0.1),
-                  child: const Icon(Icons.person, color: Colors.redAccent, size: 20),
+                  backgroundColor: isHistory ? Colors.white10 : Colors.redAccent.withOpacity(0.1),
+                  radius: 18,
+                  child: Icon(
+                    isHistory ? Icons.history : Icons.person, 
+                    color: isHistory ? Colors.white24 : Colors.redAccent, 
+                    size: 16
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -125,30 +160,34 @@ class _RedemptionAdminCard extends ConsumerWidget {
                     children: [
                       Text(
                         redemption.customerFullName,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: isHistory ? Colors.white60 : Colors.white, 
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                       Text(
                         redemption.customerEmail,
-                        style: const TextStyle(color: Colors.white38, fontSize: 11),
+                        style: const TextStyle(color: Colors.white24, fontSize: 10),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   dateStr,
-                  style: const TextStyle(color: Colors.white38, fontSize: 10),
+                  style: const TextStyle(color: Colors.white24, fontSize: 10),
                 ),
               ],
             ),
             const Divider(height: 24, color: Colors.white10),
             
-            // Cuerpo: Info Premio y Botón
             Text(
-              redemption.prizeName,
-              style: GoogleFonts.inter(
-                color: Colors.amber, 
+              redemption.prizeName.toUpperCase(),
+              style: GoogleFonts.orbitron(
+                color: isHistory ? Colors.white24 : Colors.amber, 
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: 13,
+                letterSpacing: 1,
               ),
             ),
             if (redemption.prizeDescription.isNotEmpty) ...[
@@ -158,27 +197,48 @@ class _RedemptionAdminCard extends ConsumerWidget {
                 style: const TextStyle(color: Colors.white54, fontSize: 11),
               ),
             ],
-            const SizedBox(height: 16),
             
-            // Botón de entrega (Ancho completo para evitar errores de restricción)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.check_circle_outline, size: 16),
-                label: const Text('MARCAR COMO ENTREGADO'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.withOpacity(0.1),
-                  foregroundColor: Colors.green,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
+            if (!isHistory) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.check_circle_outline, size: 16),
+                  label: const Text('CONFIRMAR ENTREGA'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.withOpacity(0.1),
+                    foregroundColor: Colors.green,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: const BorderSide(color: Colors.green, width: 0.5),
+                    ),
+                  ),
+                  onPressed: () => _confirmDelivery(context, ref),
+                ),
+              ),
+            ] else ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: Colors.green, width: 0.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.done_all_rounded, color: Colors.green, size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        'ENTREGADO',
+                        style: GoogleFonts.orbitron(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
-                onPressed: () => _confirmDelivery(context, ref),
-              ),
-            ),
+            ],
           ],
         ),
       ),
@@ -190,24 +250,17 @@ class _RedemptionAdminCard extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('¿Confirmar entrega?', style: TextStyle(color: Colors.white)),
-        content: Text('¿Le has entregado el premio "${redemption.prizeName}" a ${redemption.customerFullName}?', 
-          style: const TextStyle(color: Colors.white70)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Colors.white10)),
+        title: Text('¿CONFIRMAR ENTREGA?', style: GoogleFonts.orbitron(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+        content: Text('¿Confirmas que ya has entregado este premio al cliente?', 
+          style: GoogleFonts.inter(color: Colors.white70, fontSize: 12)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('NO')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCELAR', style: TextStyle(color: Colors.white24))),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: () async {
               Navigator.pop(ctx);
-              final success = await ref.read(adminRedemptionsProvider.notifier).deliverPrize(redemption.id);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Premio marcado como entregado' : 'Error al confirmar entrega'),
-                    backgroundColor: success ? Colors.green : Colors.redAccent,
-                  ),
-                );
-              }
+              await ref.read(adminPendingRedemptionsProvider.notifier).deliverPrize(redemption.id);
             },
             child: const Text('SÍ, ENTREGADO'),
           ),

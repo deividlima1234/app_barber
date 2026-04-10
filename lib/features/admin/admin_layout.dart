@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:barber_gold/features/admin/admin_dashboard_tab.dart';
-import 'package:barber_gold/features/admin/admin_cards_tab.dart';
 import 'package:barber_gold/features/admin/admin_users_tab.dart';
 import 'package:barber_gold/features/admin/admin_services_tab.dart';
 import 'package:barber_gold/features/admin/admin_prizes_tab.dart';
 import 'package:barber_gold/features/admin/admin_redemptions_tab.dart';
+import 'package:barber_gold/features/admin/admin_broadcast_tab.dart';
 import 'package:barber_gold/features/shared/settings_tab.dart';
 
 class AdminLayout extends ConsumerStatefulWidget {
@@ -26,7 +26,7 @@ class _AdminLayoutState extends ConsumerState<AdminLayout> {
     const AdminServicesTab(),
     const AdminPrizesTab(),
     const AdminRedemptionsTab(),
-    const AdminCardsTab(),
+    const AdminBroadcastTab(),
     const SettingsTab(),
   ];
 
@@ -56,7 +56,7 @@ class _AdminLayoutState extends ConsumerState<AdminLayout> {
           BottomNavigationBarItem(icon: Icon(Icons.content_cut), label: 'Servicios'),
           BottomNavigationBarItem(icon: Icon(Icons.stars), label: 'Ruleta'),
           BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: 'Canjes'),
-          BottomNavigationBarItem(icon: Icon(Icons.qr_code_2), label: 'QR'),
+          BottomNavigationBarItem(icon: Icon(Icons.campaign), label: 'Difusión'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Perfil'),
         ],
       ),
