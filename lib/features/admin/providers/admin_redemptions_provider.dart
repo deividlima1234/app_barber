@@ -16,9 +16,13 @@ class AdminRedemptionsNotifier extends StateNotifier<AsyncValue<List<AdminPrizeR
   Future<void> loadRedemptions() async {
     state = const AsyncValue.loading();
     try {
+      print("🚀 [NOTIFIER] Lanzando petición de canjes...");
       final data = await _repository.getPendingRedemptions();
+      print("✅ [NOTIFIER] Petición exitosa, recibidos ${data.length} canjes");
       state = AsyncValue.data(data);
     } catch (e, st) {
+      print("🚩 [NOTIFIER] ERROR CRÍTICO: $e");
+      print("📋 [NOTIFIER] RASTRO DEL ERROR: \n $st");
       state = AsyncValue.error(e, st);
     }
   }

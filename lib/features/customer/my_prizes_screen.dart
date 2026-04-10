@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:barber_gold/features/customer/providers/my_redemptions_provider.dart';
+import 'package:barber_gold/features/customer/models/prize_redemption_dto.dart';
 
 class MyPrizesScreen extends ConsumerWidget {
   const MyPrizesScreen({super.key});
@@ -11,55 +12,60 @@ class MyPrizesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final redemptionsAsync = ref.watch(myRedemptionsProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
-      appBar: AppBar(
-        title: Text(
-          'MIS PREMIOS 🏆',
-          style: GoogleFonts.orbitron(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: Colors.amber,
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.amber.withOpacity(0.02),
+            Colors.black,
+          ],
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.amber),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.amber.withOpacity(0.05),
-              Colors.black,
-            ],
-          ),
-        ),
-        child: redemptionsAsync.when(
-          data: (prizes) {
-            if (prizes.isEmpty) {
-              return _buildEmptyState();
-            }
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: prizes.length,
-              itemBuilder: (context, index) {
-                final prize = prizes[index];
-                return _buildPrizeCard(prize);
-              },
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator(color: Colors.amber)),
-          error: (err, stack) => Center(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: Text(
-              'Error al cargar tus premios',
-              style: GoogleFonts.inter(color: Colors.redAccent),
+              'MIS PREMIOS 🏆',
+              style: GoogleFonts.orbitron(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.amber,
+                letterSpacing: 2,
+              ),
             ),
           ),
-        ),
+          Expanded(
+            child: redemptionsAsync.when(
+              data: (prizes) {
+                if (prizes.isEmpty) {
+                  return _buildEmptyState();
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemCount: prizes.length,
+                  itemBuilder: (context, index) {
+                    final item = prizes[index];
+                    return _buildPrizeCard(item);
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator(color: Colors.amber)),
+              error: (err, stack) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Text(
+                    'Error: $err',
+                    style: GoogleFonts.inter(color: Colors.redAccent),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -85,7 +91,7 @@ class MyPrizesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPrizeCard(dynamic prize) {
+  Widget _buildPrizeCard(PrizeRedemptionDto prize) {
     final bool isPending = prize.status == 'PENDING';
     
     return Container(

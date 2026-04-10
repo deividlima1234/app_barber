@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:barber_gold/features/admin/models/admin_prize_redemption_dto.dart';
 import 'package:barber_gold/features/admin/providers/admin_redemptions_provider.dart';
 
 class AdminRedemptionsTab extends ConsumerWidget {
@@ -51,7 +52,14 @@ class AdminRedemptionsTab extends ConsumerWidget {
               },
               loading: () => const Center(child: CircularProgressIndicator(color: Colors.redAccent)),
               error: (err, st) => Center(
-                child: Text('Error al cargar canjes', style: TextStyle(color: Colors.redAccent)),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    'ERROR CRÍTICO: $err', 
+                    style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
             ),
           ),
@@ -63,6 +71,7 @@ class AdminRedemptionsTab extends ConsumerWidget {
   Widget _buildEmptyState() {
     return Center(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.check_circle_outline, size: 64, color: Colors.white24),
@@ -78,85 +87,100 @@ class AdminRedemptionsTab extends ConsumerWidget {
 }
 
 class _RedemptionAdminCard extends ConsumerWidget {
-  final dynamic redemption;
+  final AdminPrizeRedemptionDto redemption;
   const _RedemptionAdminCard({required this.redemption});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dateStr = DateFormat('dd/MM HH:mm').format(redemption.createdAt);
+    print("🎨 [UI] Dibujando tarjeta para el premio ID: ${redemption.id}");
+    String dateStr = "N/A";
+    try {
+      dateStr = DateFormat('dd/MM HH:mm').format(redemption.createdAt);
+    } catch (_) {}
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Colors.redAccent.withOpacity(0.1),
-                child: const Icon(Icons.person, color: Colors.redAccent, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      redemption.customerFullName,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      redemption.customerEmail,
-                      style: const TextStyle(color: Colors.white38, fontSize: 11),
-                    ),
-                  ],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Encabezado: Info Cliente
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.redAccent.withOpacity(0.1),
+                  child: const Icon(Icons.person, color: Colors.redAccent, size: 20),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        redemption.customerFullName,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        redemption.customerEmail,
+                        style: const TextStyle(color: Colors.white38, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  dateStr,
+                  style: const TextStyle(color: Colors.white38, fontSize: 10),
+                ),
+              ],
+            ),
+            const Divider(height: 24, color: Colors.white10),
+            
+            // Cuerpo: Info Premio y Botón
+            Text(
+              redemption.prizeName,
+              style: GoogleFonts.inter(
+                color: Colors.amber, 
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
               ),
+            ),
+            if (redemption.prizeDescription.isNotEmpty) ...[
+              const SizedBox(height: 4),
               Text(
-                dateStr,
-                style: const TextStyle(color: Colors.white38, fontSize: 10),
+                redemption.prizeDescription,
+                style: const TextStyle(color: Colors.white54, fontSize: 11),
               ),
             ],
-          ),
-          const Divider(height: 24, color: Colors.white10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      redemption.prizeName,
-                      style: GoogleFonts.inter(color: Colors.amber, fontWeight: FontWeight.bold),
-                    ),
-                    if (redemption.prizeDescription.isNotEmpty)
-                      Text(
-                        redemption.prizeDescription,
-                        style: const TextStyle(color: Colors.white54, fontSize: 11),
-                      ),
-                  ],
-                ),
-              ),
-              ElevatedButton(
+            const SizedBox(height: 16),
+            
+            // Botón de entrega (Ancho completo para evitar errores de restricción)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.check_circle_outline, size: 16),
+                label: const Text('MARCAR COMO ENTREGADO'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.withOpacity(0.2),
+                  backgroundColor: Colors.green.withOpacity(0.1),
                   foregroundColor: Colors.green,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  side: const BorderSide(color: Colors.green, width: 0.5),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(color: Colors.green, width: 0.5),
+                  ),
                 ),
                 onPressed: () => _confirmDelivery(context, ref),
-                child: const Text('ENTREGAR', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

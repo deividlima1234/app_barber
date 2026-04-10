@@ -18,14 +18,22 @@ class AdminPrizeRedemptionDto {
   });
 
   factory AdminPrizeRedemptionDto.fromJson(Map<String, dynamic> json) {
+    print("DEBUG: Parsing JSON: $json");
+    DateTime parsedDate;
+    try {
+      parsedDate = json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now();
+    } catch (_) {
+      parsedDate = DateTime.now();
+    }
+
     return AdminPrizeRedemptionDto(
-      id: json['id'],
-      customerEmail: json['user']['email'] ?? 'N/A',
-      customerFullName: json['user']['fullName'] ?? 'Cliente',
-      prizeName: json['prize']['name'],
-      prizeDescription: json['prize']['description'] ?? '',
-      status: json['status'],
-      createdAt: DateTime.parse(json['createdAt']),
+      id: json['id'] ?? 0,
+      customerEmail: json['customerEmail'] ?? 'N/A',
+      customerFullName: json['customerFullName'] ?? 'Cliente',
+      prizeName: json['prizeName'] ?? 'Premio',
+      prizeDescription: json['prizeDescription'] ?? '',
+      status: json['status'] ?? 'PENDING',
+      createdAt: parsedDate,
     );
   }
 }

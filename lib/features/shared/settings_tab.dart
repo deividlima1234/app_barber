@@ -55,9 +55,9 @@ class SettingsTab extends ConsumerWidget {
               const SizedBox(height: 16),
               _buildSettingsTile(
                 icon: Icons.notifications_none_outlined,
-                title: 'Notificaciones',
-                subtitle: 'Gestionar alertas y avisos',
-                trailing: Switch(value: true, onChanged: (v) {}, activeColor: Colors.redAccent),
+                title: 'Historial de Notificaciones',
+                subtitle: 'Ver avisos y alertas recibidas',
+                onTap: () => context.push('/notifications'),
               ),
               _buildSettingsTile(
                 icon: Icons.dark_mode_outlined,
@@ -188,7 +188,8 @@ class SettingsTab extends ConsumerWidget {
     required IconData icon, 
     required String title, 
     required String subtitle, 
-    Widget? trailing
+    Widget? trailing,
+    VoidCallback? onTap,
   }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -203,7 +204,7 @@ class SettingsTab extends ConsumerWidget {
       title: Text(title, style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle, style: GoogleFonts.outfit(color: Colors.white24, fontSize: 12)),
       trailing: trailing ?? const Icon(Icons.chevron_right, color: Colors.white10, size: 20),
-      onTap: trailing == null ? () {} : null,
+      onTap: onTap,
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:barber_gold/main.dart';
 import 'package:barber_gold/network/dio_client.dart';
 import 'package:barber_gold/repositories/auth_repository.dart';
 
@@ -45,10 +46,16 @@ class AuthState {
   }
 }
 
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final authRepository = ref.watch(authRepositoryProvider);
+  return AuthNotifier(authRepository, ref);
+});
+
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
+  final Ref _ref;
 
-  AuthNotifier(this._authRepository) : super(AuthState()) {
+  AuthNotifier(this._authRepository, this._ref) : super(AuthState()) {
     checkAuthStatus();
   }
 
@@ -62,6 +69,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           userRole: sessionData['role'],
           firstLogin: sessionData['firstLogin'] ?? false,
         );
+        // Suscribir al tópico de su rol
+        _ref.read(notificationServiceProvider).subscribeToRole(sessionData['role']);
       } else {
         state = state.copyWith(status: AuthStatus.unauthenticated);
       }
@@ -71,19 +80,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> login(String email, String password) async {
-    // Marcamos estado inicial cargando/limpiando error
     state = state.copyWith(status: AuthStatus.checking, errorMessage: null);
 
     try {
       final response = await _authRepository.login(email, password);
+      final role = response['role'] as String;
       
       state = AuthState(
         status: AuthStatus.authenticated,
         token: response['token'],
-        userRole: response['role'],
+        userRole: role,
         firstLogin: response['firstLogin'] ?? false,
         errorMessage: null,
       );
+
+      // Suscribir al tópico de su rol
+      _ref.read(notificationServiceProvider).subscribeToRole(role);
     } catch (e) {
       state = AuthState(
         status: AuthStatus.unauthenticated,
@@ -93,6 +105,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
+    final currentRole = state.userRole;
+    if (currentRole != null) {
+      await _ref.read(notificationServiceProvider).unsubscribeFromRole(currentRole);
+    }
+    
     await _authRepository.logout();
     state = AuthState(status: AuthStatus.unauthenticated);
   }
@@ -102,8 +119,3 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(firstLogin: false);
   }
 }
-
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final authRepository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(authRepository);
-});

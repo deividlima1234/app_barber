@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:barber_gold/features/customer/my_prizes_screen.dart';
 import 'package:barber_gold/features/shared/widgets/friendly_error_widget.dart';
 
 class HomeCustomerScreen extends ConsumerWidget {
@@ -62,7 +63,7 @@ class HomeCustomerScreen extends ConsumerWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.emoji_events, color: Colors.amber),
-              onPressed: () => context.push('/my-prizes'),
+              onPressed: () => _showPrizesModal(context),
             ),
             IconButton(
               icon: const Icon(Icons.power_settings_new, color: Colors.grey),
@@ -71,6 +72,39 @@ class HomeCustomerScreen extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+
+  void _showPrizesModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F0F0F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Expanded(child: MyPrizesScreen()),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
