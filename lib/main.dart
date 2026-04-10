@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:barber_gold/theme/app_theme.dart';
 import 'package:barber_gold/router/app_router.dart';
+import 'package:barber_gold/features/update/widgets/update_checker.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -70,6 +71,9 @@ class BarberGoldApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.cyberBarberTheme,
       routerConfig: router,
+      builder: (context, child) {
+        return UpdateChecker(child: child!);
+      },
     );
   }
 }

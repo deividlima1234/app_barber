@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -42,7 +43,13 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 64),
             
-            _buildAboutRow('Versión', '1.0.0-Stable'),
+            FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                final version = snapshot.hasData ? snapshot.data!.version : 'Cargando...';
+                return _buildAboutRow('Versión', version);
+              },
+            ),
             _buildAboutRow('Desarrollado por', 'Eddam'),
             _buildAboutRow('Corporación', 'EddamCore'),
             _buildAboutRow('Estado del Sistema', 'Online / Cloud Sync'),

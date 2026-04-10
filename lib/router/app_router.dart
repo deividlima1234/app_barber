@@ -12,11 +12,15 @@ import 'package:barber_gold/features/shared/about_screen.dart';
 import 'package:barber_gold/features/barber/scanner_pro_screen.dart';
 import 'package:barber_gold/features/auth/welcome_guide_screen.dart';
 import 'package:barber_gold/providers/auth_provider.dart';
+import 'package:flutter/material.dart';
+
+final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/login',
     redirect: (context, state) {
       final isGoingToLogin = state.matchedLocation == '/login';
